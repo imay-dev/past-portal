@@ -3,6 +3,7 @@ const CACHE_KEY = 'pastportal_cache';
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 const MAX_RETRIES = 3;
 const INITIAL_RETRY_DELAY = 1000; // 1 second
+const BOOKMARKS_KEY = 'pastportal_bookmarks';
 
 // Utility functions
 const getCache = async () => {
@@ -74,7 +75,51 @@ const displayError = (error, retryFn) => {
     console.error('PastPortal Error:', error);
 };
 
-const displayEvent = (randomEvent) => {
+const toggleBookmark = async (event) => {
+    try {
+        const result = await chrome.storage.local.get(BOOKMARKS_KEY);
+        const bookmarks = result[BOOKMARKS_KEY] || [];
+        const eventId = `${event.year}-${event.text.substring(0, 50)}`;
+        
+        const isBookmarked = bookmarks.some(b => b.id === eventId);
+        const bookmarkButton = document.getElementById('bookmarkButton');
+        
+        if (isBookmarked) {
+            const updatedBookmarks = bookmarks.filter(b => b.id !== eventId);
+            await chrome.storage.local.set({ [BOOKMARKS_KEY]: updatedBookmarks });
+            bookmarkButton.innerHTML = '<i class="far fa-bookmark"></i>';
+            bookmarkButton.title = 'Bookmark this event';
+        } else {
+            const newBookmark = {
+                id: eventId,
+                year: event.year,
+                text: event.text,
+                thumbnail: event.pages[0].thumbnail.source,
+                url: event.pages[0].content_urls.desktop.page
+            };
+            bookmarks.push(newBookmark);
+            await chrome.storage.local.set({ [BOOKMARKS_KEY]: bookmarks });
+            bookmarkButton.innerHTML = '<i class="fas fa-bookmark"></i>';
+            bookmarkButton.title = 'Remove bookmark';
+        }
+    } catch (error) {
+        console.error('Failed to toggle bookmark:', error);
+    }
+};
+
+const checkIfBookmarked = async (event) => {
+    try {
+        const result = await chrome.storage.local.get(BOOKMARKS_KEY);
+        const bookmarks = result[BOOKMARKS_KEY] || [];
+        const eventId = `${event.year}-${event.text.substring(0, 50)}`;
+        return bookmarks.some(b => b.id === eventId);
+    } catch (error) {
+        console.error('Failed to check bookmark status:', error);
+        return false;
+    }
+};
+
+const displayEvent = async (randomEvent) => {
     const img = document.getElementById('eventImage');
     
     img.onload = () => {
@@ -95,6 +140,15 @@ const displayEvent = (randomEvent) => {
     document.getElementById('eventYear').textContent = randomEvent.year;
     document.getElementById('eventText').textContent = randomEvent.text;
     document.getElementById('readMore').href = randomEvent.pages[0]?.content_urls?.desktop?.page;
+
+    // Add bookmark button
+    const isBookmarked = await checkIfBookmarked(randomEvent);
+    const bookmarkButton = document.createElement('button');
+    bookmarkButton.id = 'bookmarkButton';
+    bookmarkButton.innerHTML = isBookmarked ? '<i class="fas fa-bookmark"></i>' : '<i class="far fa-bookmark"></i>';
+    bookmarkButton.title = isBookmarked ? 'Remove bookmark' : 'Bookmark this event';
+    bookmarkButton.addEventListener('click', () => toggleBookmark(randomEvent));
+    document.body.appendChild(bookmarkButton);
 };
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
