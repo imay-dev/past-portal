@@ -154,3 +154,73 @@ body.has-bg::before {
     height: 200px;
   }
 }
+
+#refreshButton {
+  position: fixed;
+  bottom: 80px;
+  right: 30px;
+  width: 50px;
+  height: 50px;
+  border-radius: 25px;
+  background: #ffd93d;
+  border: none;
+  color: #2d3436;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#refreshButton:hover {
+  transform: rotate(180deg);
+  background: #2d3436;
+  color: #ffd93d;
+}
+
+#refreshButton:active {
+  transform: rotate(180deg) scale(0.95);
+}
+
+.error {
+  padding: 32px;
+  text-align: center;
+  color: #e74c3c;
+}
+
+.error i {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.error p {
+  font-size: 1.5rem;
+  margin: 8px 0;
+  font-weight: 500;
+}
+
+.error small {
+  color: #7f8c8d;
+  display: block;
+  margin-bottom: 16px;
+}
+
+#retryButton {
+  background: #ffd93d;
+  border: none;
+  padding: 8px 24px;
+  border-radius: 20px;
+  color: #2d3436;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#retryButton:hover {
+  background: #2d3436;
+  color: #ffd93d;
+  transform: translateY(-2px);
+}
